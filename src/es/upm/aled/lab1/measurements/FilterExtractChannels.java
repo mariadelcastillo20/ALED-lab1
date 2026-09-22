@@ -8,6 +8,7 @@ package es.upm.aled.lab1.measurements;
  */
 public class FilterExtractChannels implements Filter {
 
+	private int[] validChannels;
 	/**
 	 * Builds the Filter. The use from an array of valid channels.
 	 * 
@@ -15,14 +16,31 @@ public class FilterExtractChannels implements Filter {
 	 */
 	public FilterExtractChannels(int[] validChannels) {
 		// TODO
-		
+		this.validChannels = validChannels;
 	}
 
 	@Override
 	public EEGModel applyFilter(EEGModel eeg) {
 		// TODO
 		
-		return null;
+		Measurement [] measurements = eeg.getMeasurements(); //array con las medidas originales
+		Measurement [] filteredMeasurements = new Measurement[measurements.length]; //Creo un array vacío del mismo tamaño
+		
+		for(int i=0; i<measurements.length; i++) {
+			
+			float [] channels = new float [validChannels.length]; //Me creo array con canales que serán validos
+			
+			int k=0;
+			for(int channel : validChannels) {
+				channels[k] = measurements[i].getChannel(channel);
+				k++;
+			}
+			
+			filteredMeasurements[i]= new Measurement (channels);
+		}
+		
+		return new EEGModel (filteredMeasurements);
+		
 	}
 
 }

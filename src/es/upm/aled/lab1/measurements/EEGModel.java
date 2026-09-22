@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+
 import es.upm.aled.lab1.gui.EEG_GUI;
 
 /**
@@ -57,7 +58,9 @@ public class EEGModel {
 	 */
 	public EEGModel(Measurement[] measurements) {
 		// TODO
-		
+		for (Measurement measurement: measurements)
+			addMeasurement(measurement); //Tambien podríamos this.measurements.add(measurement)
+			
 	}
 
 	/**
@@ -90,8 +93,7 @@ public class EEGModel {
 	 */
 	public EEGModel filter(Filter filter) {
 		// TODO
-		
-		return null;
+		return filter.applyFilter(this);
 	}
 
 	/**
@@ -131,7 +133,20 @@ public class EEGModel {
 	 */
 	public void saveFile(String fileName) throws IOException {
 		// TODO
+		File f = new File(fileName);
+		FileOutputStream fos = new FileOutputStream(f);
+		PrintStream ps = new PrintStream (fos);
 		
+		int index=0;
+		for(Measurement measurement : this.measurements) {
+			ps.print((index++)%256); //Imprime sin salto de linea el índice sin pasarse de 255, vuelve al 0
+			
+			for(int i = 0; i<measurement.numChannels();i++)
+				ps.print(", " + measurement.getChannel(i));
+			
+			ps.println();
+		}
+		ps.close();
 	}
 
 	/**
@@ -248,14 +263,31 @@ public class EEGModel {
 	public static void main(String[] args) {
 		if (args.length > 0) {
 			EEGModel eeg = new EEGModel(args[0]);
-			eeg.plotData();
+		
 			// TODO
+			
+			int min = 2750;
+			int max = 5750;
+			int [] validChannels = {8,9,10};
+			
+			eeg = eeg.filter (new FilterExtractPeriod(min, max));
+			eeg = eeg.filter(new FilterExtractChannels(validChannels));
+			
+			eeg.plotData();
 			
 		} else {
+	
 			EEGModel eeg = new EEGModel();
 			eeg.createSyntheticData(1000);
+		
 			// TODO
 			
+			try {
+				eeg.saveFile("recordings/Synthetic.txt");
+		
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }
